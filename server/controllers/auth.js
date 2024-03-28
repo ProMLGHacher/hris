@@ -4,7 +4,6 @@ import { generateAccessToken } from "../utils/generateToken.js"
 
 //авторизация
 export const auth = async (req, res) => {
-    console.log("{EQ");
     //вытаскиваем json и сразу вытаскиваем из нее переменные
     const { username, password } = req.body 
     //вытаскиваем из базы пользователя

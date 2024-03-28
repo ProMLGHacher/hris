@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom"
 import App from "../App";
 import { useAppSelector } from "../redux/hooks";
 import { Login } from "../pages/Login/Login";
+import { Register } from "../pages/Login/Register";
 
 
 const authRouter = createBrowserRouter([
@@ -21,6 +22,11 @@ const nonAuthRouter = createBrowserRouter([
     {
         path: '/login',
         element: <Login />,
+        errorElement: '404'
+    },
+    {
+        path: '/register',
+        element: <Register />,
         errorElement: '404'
     },
     {

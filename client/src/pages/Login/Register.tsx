@@ -2,11 +2,11 @@ import { EventHandler, FormEvent, useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../redux/hooks"
 import { loginThunk } from "../../redux/slices/authSlice"
 import { Link } from "react-router-dom"
+import regSlice from "../../redux/slices/regSlice"
 
-export const Login = () => {
+export const Register = () => {
 
     const loginState = useAppSelector(state => state.auth)
-    const loginError = useAppSelector(state => state.auth.error)
 
     const [login, setLogin] = useState("")
     const [password, setPassword] = useState("")
@@ -15,7 +15,7 @@ export const Login = () => {
 
     const formSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        const loginPromise = dispatch(loginThunk({
+        const loginPromise = dispatch(regSlice({
             username: login,
             password: password
         }))
@@ -30,7 +30,6 @@ export const Login = () => {
     //     if (!loginError) return
     //     setError(loginError)
     // }, [loginError])
-
 
     return (
         <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -108,9 +107,9 @@ export const Login = () => {
                 </form>
 
                 <p className="mt-10 text-center text-sm text-gray-500">
-                    Нет аккаунта?{' '}
-                    <Link to="/register" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
-                        Зарегистрироваться
+                    Уже есть аккаунт?{' '}
+                    <Link to="/login" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
+                        Войти
                     </Link>
                 </p>
             </div>
