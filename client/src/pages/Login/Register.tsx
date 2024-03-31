@@ -1,27 +1,31 @@
-import { EventHandler, FormEvent, useEffect, useState } from "react"
+import { FormEvent, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../redux/hooks"
-import { loginThunk } from "../../redux/slices/authSlice"
-import { Link } from "react-router-dom"
-import regSlice from "../../redux/slices/regSlice"
+import { Link, useNavigate } from "react-router-dom"
+import { regThunk } from "../../redux/slices/regSlice"
 
 export const Register = () => {
 
-    const loginState = useAppSelector(state => state.auth)
+    const loginState = useAppSelector(state => state.register)
 
     const [login, setLogin] = useState("")
     const [password, setPassword] = useState("")
-    const [error, setError] = useState("")
+    const [error, setError] = useState<string | undefined>("")
     const dispatch = useAppDispatch()
+
+    const navigate = useNavigate()
 
     const formSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        const loginPromise = dispatch(regSlice({
+        const regPromise = dispatch(regThunk({
             username: login,
             password: password
         }))
-        loginPromise.then(e => {
-            if (e.type == 'logThunk/rejected') {
-                setError(e.payload as string)
+        regPromise.then(e => {
+            if (e.type == 'regThunk/rejected') {
+                setError(e.payload)
+            }
+            if (e.type == 'regThunk/fulfilled') {
+                navigate('/login')
             }
         })
     }
@@ -40,7 +44,7 @@ export const Register = () => {
                     alt="Your Company"
                 />
                 <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-                    Sign in to your account
+                    Регистрация
                 </h2>
             </div>
 

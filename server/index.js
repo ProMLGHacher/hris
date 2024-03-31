@@ -7,6 +7,8 @@ import cors from 'cors'
 import jwt from 'jsonwebtoken'
 import './modules/telegram.js'
 import { sendMessageToAdmins, startTelegramBot } from "./modules/telegram.js";
+import multer from "multer";
+import path from 'path'
 
 //порт на котором будет работать сервер
 const PORT = 3000
@@ -18,6 +20,26 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/avatars'); // Upload avatar files to the 'uploads/avatars' directory
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname); // Keep the original filename
+    }
+});
+
+// Multer file filter to allow only image files
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files are allowed'), false);
+    }
+};
+
+const upload = multer({ storage: storage, fileFilter: fileFilter });
+
 app.get('/', roleMiddleware(["ADMIN"]), async (req, res) => {
     const data = await sql`select * from Users`
     res.send(data)
@@ -28,13 +50,67 @@ app.post('/reg', register)
 //ветка логина
 app.post('/auth', auth)
 
+app.get('/profile', roleMiddleware(["USER", "ADMIN"]), async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1]
+    const { id: user_id } = jwt.verify(token, "SECRET_KEY")
+    const user = (await sql`select * from Users where id = ${user_id}`)[0]
+    return res.send(user)
+})
+
+app.put('/profile', roleMiddleware(["USER", "ADMIN"]), upload.single('avatar'), async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1]
+    const { id: userId } = jwt.verify(token, "SECRET_KEY")
+    const avatar = req.file ? req.file.filename : null;
+
+
+    try {
+        await sql`
+            UPDATE Users
+            SET avatar = ${avatar}
+            WHERE id = ${userId}
+        `;
+
+        res.status(200).send('User updated successfully');
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.get('/avatars/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const avatarPath = path.join(process.cwd(), '/uploads/avatars/', filename); // Assuming avatars are stored in the 'uploads/avatars' directory
+
+    // Send the avatar file
+    res.sendFile(avatarPath);
+});
+
+
+// id SERIAL PRIMARY KEY,
+// title VARCHAR(100) NOT NULL,
+// description TEXT NOT NULL,
+// date DATE NOT NULL,
+// href varchar(200) NOT NULL,
+// category varchar(50) NOT NULL
 app.get('/news', async (req, res) => {
     const news = await sql`select * from News`
     return res.send(news)
 })
-app.post('/news', async (req, res) => {
+app.post('/news', roleMiddleware(["ADMIN"]), async (req, res) => {
     const temp = req.body
-    await sql`insert into News(title, description, date) values(${temp.title}, ${temp.description}, ${Date.now()})`
+    if (!temp.title) return res.status(400).send({
+        message: 'title is reqired'
+    })
+    if (!temp.description) return res.status(400).send({
+        message: 'description is reqired'
+    })
+    if (!temp.href) return res.status(400).send({
+        message: 'href is reqired'
+    })
+    if (!temp.category) return res.status(400).send({
+        message: 'category is reqired'
+    })
+    await sql`insert into News(title, description, date, href, category) values(${temp.title}, ${temp.description}, ${Date.now()}, ${temp.href}, ${temp.category})`
     return res.send(200)
 })
 
@@ -52,7 +128,12 @@ app.get('/categories', async (req, res) => {
 // POST запрос для создания новой категории услуг
 app.post('/categories', async (req, res) => {
     const { name } = req.body;
+    if (!name) return res.status(400).send({
+        message: 'name is reqired'
+    })
     try {
+        const pot = await sql`SELECT * FROM Categories where name = (${name})`;
+        if (pot.length > 0) return res.status(409).send()
         await sql`INSERT INTO Categories (name) VALUES (${name})`;
         res.status(201).json({ message: 'Категория успешно создана' });
     } catch (error) {
@@ -63,9 +144,15 @@ app.post('/categories', async (req, res) => {
 
 // GET запрос для получения всех услуг
 app.get('/services', async (req, res) => {
+    const category_id = req.query.category
     try {
-        const services = await sql`SELECT * FROM Services`;
-        res.json(services);
+        if (category_id) {
+            const services = await sql`SELECT * FROM Services where category_id = ${category_id}`;
+            res.json(services);
+        } else {
+            const services = await sql`SELECT * FROM Services`;
+            res.json(services);
+        }
     } catch (error) {
         console.error('Ошибка при получении услуг:', error);
         res.status(500).json({ error: 'Внутренняя ошибка сервера' });
@@ -75,6 +162,18 @@ app.get('/services', async (req, res) => {
 // POST запрос для создания новой услуги
 app.post('/services', roleMiddleware(['ADMIN']), async (req, res) => {
     const { title, description, category_id, price } = req.body;
+    if (!title) return res.status(400).send({
+        message: 'title is reqired'
+    })
+    if (!description) return res.status(400).send({
+        message: 'description is reqired'
+    })
+    if (!category_id) return res.status(400).send({
+        message: 'category_id is reqired'
+    })
+    if (!price) return res.status(400).send({
+        message: 'price is reqired'
+    })
     try {
         await sql`INSERT INTO Services (title, description, category_id, price) VALUES (${title}, ${description}, ${category_id}, ${price})`;
         res.status(201).json({ message: 'Услуга успешно создана' });
@@ -108,6 +207,9 @@ app.post('/orders', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1]
     const { id: user_id } = jwt.verify(token, "SECRET_KEY")
     const { service_id } = req.body;
+    if (!service_id) return res.status(400).send({
+        message: 'service_id is reqired'
+    })
     const order_date = Date.now()
     try {
         await sql`INSERT INTO Orders (user_id, service_id, order_date) VALUES (${user_id}, ${service_id}, ${order_date})`;
@@ -131,14 +233,17 @@ const start = async () => {
         login varchar(100) NOT NULL,
         role varchar(100),
         password varchar(250),
+        avatar varchar(250),
         telegramChatId INT,
         FOREIGN KEY (role) REFERENCES Roles(role)
     )`
     await sql`CREATE TABLE IF NOT EXISTS News (
         id SERIAL PRIMARY KEY,
         title VARCHAR(100) NOT NULL,
-        description TEXT,
-        date DATE
+        description TEXT NOT NULL,
+        date DATE NOT NULL,
+        href varchar(200) NOT NULL,
+        category varchar(50) NOT NULL
     );`
 
     await sql`CREATE TABLE IF NOT EXISTS Categories (

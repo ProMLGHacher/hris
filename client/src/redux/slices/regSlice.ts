@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { $api } from '../../shared/api'
+import { isAxiosError } from 'axios'
 
 type RegStateType = {
     loading: boolean,
@@ -30,25 +31,37 @@ export const regSlice = createSlice({
         builder.addCase(regThunk.fulfilled, (state, action) => {
             const payload = action.payload
 
-            state.message = payload.message
+            state.message = payload
             state.loading = false
         })
-        builder.addCase(regThunk.rejected, (state, _) => {
-            state.error = 'somthing went wrong'
+        builder.addCase(regThunk.rejected, (state, action) => {
+            state.error = action.payload
             state.loading = false
         })
     }
 })
 
-export const regThunk = createAsyncThunk("regThunk", async (data, { rejectWithValue }) => {
+type RegisterPayload = {
+    username: string;
+    password: string;
+}
+
+export const regThunk = createAsyncThunk<string, RegisterPayload, { rejectValue: string }>("regThunk", async (data, { rejectWithValue }) => {
     try {
         const result = await $api.post('/reg', data)
-        if (result.status === 400) {
-            rejectWithValue(result.data)
-        }
-        return result.data
+        return result.data.message
     } catch (error) {
-        return rejectWithValue("Чтото пошло не так")
+        if (!isAxiosError(error)) {
+            return rejectWithValue("Чтото пошло не так")
+        }
+        if (error.response?.status == 409) {
+            console.log('sdilfuhsduiolfyhsduilfhuil');
+            
+            return rejectWithValue(error.response?.data.message)
+        }
+        else {
+            return rejectWithValue("Чтото пошло не так")
+        }
     }
 })
 

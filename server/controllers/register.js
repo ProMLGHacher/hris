@@ -10,7 +10,7 @@ export const register = async (req, res) => {
     let candidate = (await sql`select * from Users where login = ${username}`)[0]
     //если мы нашли пользователя с таким ником, то отправляем пользователю обратно ошибку что пользователь уже существует
     if (candidate) {
-        return res.send({
+        return res.status(409).send({
             message: "Пользователь уже сущетсвует"
         })
     }

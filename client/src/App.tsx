@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import Header from './components/Header'
 import PushAlert from './components/PushAlert'
+import { Outlet } from 'react-router-dom'
 
 function App() {
 
@@ -13,18 +14,7 @@ function App() {
     <>
       <Header />
       <PushAlert onConfirm={onConfirm} />
-      <button
-        className="button"
-        onClick={() => {
-          setOnConfirm(() => {
-            return () => {
-              alert('ХУЙ')
-            }
-          })
-        }}
-      >
-        remove
-      </button>
+      <Outlet />
     </>
   )
 }

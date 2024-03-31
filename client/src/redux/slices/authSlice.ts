@@ -1,13 +1,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { $api } from '../../shared/api'
-import { Axios, AxiosError } from 'axios'
+import { isAxiosError } from 'axios'
 
 type AuthState = {
     loading: boolean,
     token: string | undefined,
     role: "ADMIN" | "USER" | undefined,
     login: string | undefined,
-    error: undefined | string
+    error: undefined | string,
+    avatar: string | undefined
 }
 
 const initialState: AuthState = {
@@ -15,6 +16,7 @@ const initialState: AuthState = {
     token: localStorage.getItem('token') || undefined,
     role: localStorage.getItem("role") == "ADMIN" ? "ADMIN" : "USER" || undefined,
     login: localStorage.getItem("login") || undefined,
+    avatar: localStorage.getItem("avatar") || undefined,
     error: undefined
 }
 
@@ -24,7 +26,7 @@ export const authSlice = createSlice({
     reducers: {
         logOut: (state) => {
             state.error = undefined
-            state.loading = true
+            state.loading = false
             state.login = undefined
             state.role = undefined
             state.token = undefined
@@ -57,6 +59,11 @@ export const authSlice = createSlice({
             state.error = payload.payload
             state.loading = false
         })
+        builder.addCase(uploadAvatarThunk.fulfilled, (state, action) => {
+            state.avatar = action.payload
+            localStorage.setItem("avatar", action.payload)
+            state.loading = false
+        })
     }
 })
 
@@ -82,8 +89,22 @@ export const loginThunk = createAsyncThunk<LoginFullfiled, LoginPayload, { rejec
         }
         return result.data
     } catch (error) {
-        if (error instanceof AxiosError) {
+        if (isAxiosError(error)) {
             return rejectWithValue(error.response?.data.message)
+        }
+        return rejectWithValue("чтото не так")
+    }
+})
+
+export const uploadAvatarThunk = createAsyncThunk<string, File, { rejectValue: string }>("uploadAvatarThunk", async (data, { rejectWithValue }) => {
+    try {
+        const formData = new FormData();
+        formData.append('avatar', data);
+        await $api.put('/profile', formData)
+        return data.name
+    } catch (error) {
+        if (isAxiosError(error)) {
+            return rejectWithValue(error.response?.data)
         }
         return rejectWithValue("чтото не так")
     }
