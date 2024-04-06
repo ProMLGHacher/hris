@@ -62,13 +62,47 @@ app.put('/profile', roleMiddleware(["USER", "ADMIN"]), upload.single('avatar'), 
     const { id: userId } = jwt.verify(token, "SECRET_KEY")
     const avatar = req.file ? req.file.filename : null;
 
-
     try {
         await sql`
             UPDATE Users
             SET avatar = ${avatar}
             WHERE id = ${userId}
         `;
+
+        res.status(200).send('User updated successfully');
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.patch('/profile', roleMiddleware(["USER", "ADMIN"]), upload.single('avatar'), async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1]
+    const { id: userId } = jwt.verify(token, "SECRET_KEY")
+    const { name, lastname, email } = req.body
+
+    try {
+        if (name) {
+            await sql`
+                UPDATE Users
+                SET name = ${name}
+                WHERE id = ${userId}
+            `;
+        }
+        if (lastname) {
+            await sql`
+                UPDATE Users
+                SET lastname = ${lastname}
+                WHERE id = ${userId}
+            `;
+        }
+        if (email) {
+            await sql`
+                UPDATE Users
+                SET email = ${email}
+                WHERE id = ${userId}
+            `;
+        }
 
         res.status(200).send('User updated successfully');
     } catch (error) {
@@ -231,6 +265,9 @@ const start = async () => {
     await sql`create table if not exists Users(
         id SERIAL PRIMARY KEY NOT NULL,
         login varchar(100) NOT NULL,
+        name varchar(100),
+        lastname varchar(100),
+        email varchar(100),
         role varchar(100),
         password varchar(250),
         avatar varchar(250),

@@ -58,6 +58,10 @@ const nonAuthRouter = createBrowserRouter([
                 element: <News />
             },
             {
+                path: '/services',
+                element: <Services />
+            },
+            {
                 path: '*',
                 element: <Navigate to={'/'} />
             }

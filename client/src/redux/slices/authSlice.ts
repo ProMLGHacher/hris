@@ -8,7 +8,10 @@ type AuthState = {
     role: "ADMIN" | "USER" | undefined,
     login: string | undefined,
     error: undefined | string,
-    avatar: string | undefined
+    avatar: string | undefined,
+    name : string | undefined,
+    lastname : string | undefined,
+    email : string | undefined
 }
 
 const initialState: AuthState = {
@@ -17,6 +20,9 @@ const initialState: AuthState = {
     role: localStorage.getItem("role") == "ADMIN" ? "ADMIN" : "USER" || undefined,
     login: localStorage.getItem("login") || undefined,
     avatar: localStorage.getItem("avatar") || undefined,
+    name: localStorage.getItem("name") || undefined,
+    lastname : localStorage.getItem("lastname") || undefined,
+    email : localStorage.getItem("email") || undefined,
     error: undefined
 }
 
@@ -34,6 +40,10 @@ export const authSlice = createSlice({
             localStorage.removeItem("token")
             localStorage.removeItem("role")
             localStorage.removeItem("login")
+            localStorage.removeItem("avatar")
+            localStorage.removeItem("name")
+            localStorage.removeItem("lastname")
+            localStorage.removeItem("email")
         }
     },
     extraReducers: (builder) => {
@@ -62,7 +72,20 @@ export const authSlice = createSlice({
         builder.addCase(uploadAvatarThunk.fulfilled, (state, action) => {
             state.avatar = action.payload
             localStorage.setItem("avatar", action.payload)
-            state.loading = false
+        })
+        builder.addCase(updateProfileThunk.fulfilled, (state, action) => {
+            if (action.payload.name) {
+                state.name = action.payload.name
+                localStorage.setItem("name", action.payload.name)
+            }
+            if (action.payload.lastname) {
+                state.lastname = action.payload.lastname
+                localStorage.setItem("lastname", action.payload.lastname)
+            }
+            if (action.payload.email) {
+                state.email = action.payload.email
+                localStorage.setItem("email", action.payload.email)
+            }
         })
     }
 })
@@ -102,6 +125,24 @@ export const uploadAvatarThunk = createAsyncThunk<string, File, { rejectValue: s
         formData.append('avatar', data);
         await $api.put('/profile', formData)
         return data.name
+    } catch (error) {
+        if (isAxiosError(error)) {
+            return rejectWithValue(error.response?.data)
+        }
+        return rejectWithValue("чтото не так")
+    }
+})
+
+type UserData = {
+    name?: string | undefined,
+    lastname?: string | undefined,
+    email?: string | undefined
+}
+
+export const updateProfileThunk = createAsyncThunk<UserData, UserData, { rejectValue: string }>("updateProfileThunk", async (data, { rejectWithValue }) => {
+    try {
+        const res = await $api.patch('/profile', data)
+        return data
     } catch (error) {
         if (isAxiosError(error)) {
             return rejectWithValue(error.response?.data)

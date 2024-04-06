@@ -1,17 +1,28 @@
 import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
 import { FormEvent, useState } from 'react'
-import { useAppDispatch } from '../redux/hooks'
-import { uploadAvatarThunk } from '../redux/slices/authSlice'
+import { useAppDispatch, useAppSelector } from '../redux/hooks'
+import { updateProfileThunk, uploadAvatarThunk } from '../redux/slices/authSlice'
 
 export const Profile = () => {
 
+    const { email: stateEmail, lastname: stateLastname, name: stateName } = useAppSelector(state => state.auth)
     const [avatar, setAvatar] = useState<File | undefined | null>(undefined)
+    const [name, setName] = useState(stateName)
+    const [lastname, setLastname] = useState(stateLastname)
+    const [email, setEmail] = useState(stateEmail)
     const dispatch = useAppDispatch()
+
 
     const onSubmit = (e: FormEvent) => {
         e.preventDefault()
-        if (!avatar) return
-        dispatch(uploadAvatarThunk(avatar))
+        if (avatar) {
+            dispatch(uploadAvatarThunk(avatar))
+        }
+        dispatch(updateProfileThunk({
+            name,
+            email,
+            lastname
+        }))
     }
 
     return (
@@ -58,7 +69,7 @@ export const Profile = () => {
                     <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                         <div className="sm:col-span-3">
                             <label htmlFor="first-name" className="block text-sm font-medium leading-6 text-gray-900">
-                                First name
+                                Имя
                             </label>
                             <div className="mt-2">
                                 <input
@@ -66,14 +77,18 @@ export const Profile = () => {
                                     name="first-name"
                                     id="first-name"
                                     autoComplete="given-name"
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    value={name}
+                                    onChange={(e) => {
+                                        setName(e.target.value)
+                                    }}
+                                    className="input"
                                 />
                             </div>
                         </div>
 
                         <div className="sm:col-span-3">
                             <label htmlFor="last-name" className="block text-sm font-medium leading-6 text-gray-900">
-                                Last name
+                                Фамилия
                             </label>
                             <div className="mt-2">
                                 <input
@@ -81,14 +96,18 @@ export const Profile = () => {
                                     name="last-name"
                                     id="last-name"
                                     autoComplete="family-name"
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    value={lastname}
+                                    onChange={(e) => {
+                                        setLastname(e.target.value)
+                                    }}
+                                    className="input"
                                 />
                             </div>
                         </div>
 
                         <div className="sm:col-span-4">
                             <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
-                                Email address
+                                Email
                             </label>
                             <div className="mt-2">
                                 <input
@@ -96,7 +115,11 @@ export const Profile = () => {
                                     name="email"
                                     type="email"
                                     autoComplete="email"
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    value={email}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value)
+                                    }}
+                                    className="input"
                                 />
                             </div>
                         </div>
