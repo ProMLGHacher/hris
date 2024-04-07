@@ -10,6 +10,7 @@ import { Admin } from "../pages/admin/Admin";
 import { CategoriesAdmin } from "../pages/admin/CategoriesAdmin";
 import { Services } from "../pages/Services";
 import { ServicesAdmin } from "../pages/admin/ServicesAdmin";
+import { Service } from "../pages/Service";
 
 
 const authRouter = createBrowserRouter([
@@ -97,6 +98,10 @@ const adminRouter = createBrowserRouter([
             {
                 path: '/services',
                 element: <Services />
+            },
+            {
+                path: '/service/:id',
+                element: <Service />
             },
             {
                 path: '/admin',

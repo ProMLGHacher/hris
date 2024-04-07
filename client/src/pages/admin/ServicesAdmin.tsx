@@ -1,10 +1,12 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Category, createServices, getCategories } from '../../shared/api'
 import DropDown from '../../shared/ui/DropDown'
+import { PhotoIcon } from '@heroicons/react/24/outline'
 
 export const ServicesAdmin = () => {
     const [categories, setCategories] = useState<Category[]>([])
     const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined)
+    const [avatar, setAvatar] = useState<File | undefined | null>(undefined)
 
     useEffect(() => {
         getCategories().then(e => {
@@ -26,11 +28,13 @@ export const ServicesAdmin = () => {
     const save = (event: FormEvent) => {
         event.preventDefault()
         if (!selectedCategory) return
+        if (!avatar) return
         createServices({
             category_id: selectedCategory,
             description: description,
             price: price,
-            title: title
+            title: title,
+            image: avatar
         }).then(e => {
             if (e == 201) {
                 clear()
@@ -83,6 +87,30 @@ export const ServicesAdmin = () => {
                                 />
                             </div>
                             <p className="mt-3 text-sm leading-6 text-gray-600">Тут не забудьте написать описание услуги</p>
+                        </div>
+                        <div className="col-span-full">
+                            <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
+                                Обложка
+                            </label>
+                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                                <div className="text-center">
+                                    <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
+                                    <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                        <label
+                                            htmlFor="file-upload"
+                                            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+                                        >
+                                            <span>Загрузить файл</span>
+                                            <input onChange={e => {
+                                                setAvatar(e.target.files?.[0])
+                                            }} id="file-upload" name="file-upload" type="file" className="sr-only" />
+                                        </label>
+                                        <p className="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                                    <p>{avatar?.name}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className="flex gap-6 mt-8">

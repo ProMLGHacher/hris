@@ -36,6 +36,10 @@ export const authSlice = createSlice({
             state.login = undefined
             state.role = undefined
             state.token = undefined
+            state.avatar = undefined
+            state.email = undefined
+            state.name = undefined
+            state.lastname = undefined
 
             localStorage.removeItem("token")
             localStorage.removeItem("role")
@@ -55,6 +59,10 @@ export const authSlice = createSlice({
             state.token = payload.token
             state.login = payload.user.login
             state.role = payload.user.role == "ADMIN" ? "ADMIN" : "USER"
+            state.avatar = payload.user.avatar
+            state.name = payload.user.name
+            state.lastname = payload.user.lastname
+            state.email = payload.user.email
 
             localStorage.setItem("token", payload.token)
             localStorage.setItem("login", payload.user.login)
@@ -95,7 +103,11 @@ type LoginFullfiled = {
     "user": {
         "id": number,
         "login": string,
-        "role": string
+        "role": string,
+        lastname: string,
+        name: string,
+        email: string,
+        avatar : string
     }
 }
 

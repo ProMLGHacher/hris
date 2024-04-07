@@ -76,7 +76,7 @@ app.put('/profile', roleMiddleware(["USER", "ADMIN"]), upload.single('avatar'), 
     }
 });
 
-app.patch('/profile', roleMiddleware(["USER", "ADMIN"]), upload.single('avatar'), async (req, res) => {
+app.patch('/profile', roleMiddleware(["USER", "ADMIN"]), async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1]
     const { id: userId } = jwt.verify(token, "SECRET_KEY")
     const { name, lastname, email } = req.body
@@ -193,9 +193,22 @@ app.get('/services', async (req, res) => {
     }
 });
 
+app.get('/services/:id', async (req, res) => {
+    const service_id = req.params.id
+    try {
+        const services = await sql`SELECT * FROM Services where id = ${service_id}`;
+        res.json(services[0]);
+    } catch (error) {
+        console.error('Ошибка при получении услуг:', error);
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
+});
+
 // POST запрос для создания новой услуги
-app.post('/services', roleMiddleware(['ADMIN']), async (req, res) => {
+app.post('/services', roleMiddleware(['ADMIN']), upload.single('image'), async (req, res) => {
     const { title, description, category_id, price } = req.body;
+    const avatar = req.file ? req.file.filename : null;
+
     if (!title) return res.status(400).send({
         message: 'title is reqired'
     })
@@ -209,7 +222,7 @@ app.post('/services', roleMiddleware(['ADMIN']), async (req, res) => {
         message: 'price is reqired'
     })
     try {
-        await sql`INSERT INTO Services (title, description, category_id, price) VALUES (${title}, ${description}, ${category_id}, ${price})`;
+        await sql`INSERT INTO Services (title, description, category_id, price, image) VALUES (${title}, ${description}, ${category_id}, ${price}, ${avatar})`;
         res.status(201).json({ message: 'Услуга успешно создана' });
     } catch (error) {
         console.error('Ошибка при создании услуги:', error);
@@ -293,7 +306,8 @@ const start = async () => {
         title VARCHAR(100) NOT NULL,
         description TEXT,
         category_id INT,
-        price DECIMAL(10,2),
+        price INT,
+        image varchar(100),
         FOREIGN KEY (category_id) REFERENCES Categories(id)
         );`
 
@@ -314,7 +328,7 @@ const start = async () => {
         console.log('Роли уже существуют в системе');
     }
 
-    startTelegramBot()
+    // startTelegramBot()
 
     //запустить сервак
     //(прослушивать порт на запросы)

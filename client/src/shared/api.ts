@@ -72,7 +72,8 @@ export type Service = {
     title: string,
     description: string,
     category_id: number,
-    price: number
+    price: number,
+    image: string
 }
 
 export const getServices = async (category_id?: number | undefined) => {
@@ -84,7 +85,19 @@ export const getServices = async (category_id?: number | undefined) => {
     return data
 }
 
-export const createServices = async (newService: Omit<Service, 'id'>) => {
-    const data = await $api.post('/services', newService)
+export const createServices = async (newService: {
+    title: string,
+    description: string,
+    category_id: number,
+    price: number,
+    image: File
+}) => {
+    const formData = new FormData()
+    formData.append('title', newService.title)
+    formData.append('description', newService.description)
+    formData.append('category_id', `${newService.category_id}`)
+    formData.append('price', `${newService.price}`)
+    formData.append('image', newService.image)
+    const data = await $api.post('/services', formData)
     return data.status
 }
