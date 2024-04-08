@@ -17,20 +17,59 @@ const authRouter = createBrowserRouter([
     {
         path: '/',
         element: <App />,
-        errorElement: <Navigate to={'/'} />
+        children: [
+            {
+                path: '/login',
+                element: <Navigate to={'/'} />
+            },
+            {
+                path: '/register',
+                element: <Navigate to={'/'} />
+            },
+            {
+                path: '/reg',
+                element: <Navigate to={'/'} />
+            },
+            {
+                path: '/news',
+                element: <News />
+            },
+            {
+                path: '/profile',
+                element: <Profile />
+            },
+            {
+                path: '/services',
+                element: <Services />
+            },
+            {
+                path: '/service/:id',
+                element: <Service />
+            },
+            {
+                path: '/admin',
+                element: <Admin />,
+                children: [
+                    {
+                        path: '/admin/news',
+                        element: <NewsAdmin />
+                    },
+                    {
+                        path: '/admin/categories',
+                        element: <CategoriesAdmin />
+                    },
+                    {
+                        path: '/admin/services',
+                        element: <ServicesAdmin />
+                    },
+                ]
+            },
+            {
+                path: '*',
+                element: <Navigate to={'/'} />
+            }
+        ]
     },
-    {
-        path: '/login',
-        element: <Navigate to={'/'} />
-    },
-    {
-        path: '/register',
-        element: <Navigate to={'/'} />
-    },
-    {
-        path: '/reg',
-        element: <Navigate to={'/'} />
-    }
 ])
 
 const nonAuthRouter = createBrowserRouter([
@@ -50,17 +89,16 @@ const nonAuthRouter = createBrowserRouter([
                 errorElement: '404'
             },
             {
-                path: '/reg',
-                element: <App />,
-                errorElement: '404'
-            },
-            {
                 path: '/news',
                 element: <News />
             },
             {
                 path: '/services',
                 element: <Services />
+            },
+            {
+                path: '/service/:id',
+                element: <Service />
             },
             {
                 path: '*',
@@ -81,10 +119,6 @@ const adminRouter = createBrowserRouter([
             },
             {
                 path: '/register',
-                element: <Navigate to={'/'} />
-            },
-            {
-                path: '/reg',
                 element: <Navigate to={'/'} />
             },
             {
