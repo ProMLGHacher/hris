@@ -29,19 +29,23 @@ export const Service = () => {
         })
     }, [])
 
+    if (!id) {
+        return <></>
+    }
+
     return (
         <>
             <div className='grid grid-cols-2 max-w-7xl mx-auto gap-8 mt-12'>
-                <img className='bg-slate-50 p-4 rounded-2xl' src={`${baseURL}/avatars/${service?.image}`} alt="" />
+                <img className='bg-slate-50 rounded-2xl w-full' src={`${baseURL}/avatars/${service?.image}`} alt="" />
                 <div className='flex flex-col'>
                     <div className='flex items-center justify-between'>
-                        <h1>{service?.title}</h1>
-                        <p>{service?.price}</p>
+                        <h1 className='text-3xl font-bold'>{service?.title}</h1>
+                        <p className='text-xl italic'>{service?.price} RUB</p>
                     </div>
-                    <p>{service?.description}</p>
+                    <p className='mt-8'>{service?.description}</p>
                 </div>
             </div>
-            <SendService />
+            <SendService service_id={id} />
         </>
     )
 }

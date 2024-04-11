@@ -260,7 +260,7 @@ app.post('/orders', async (req, res) => {
     const order_date = Date.now()
     try {
         await sql`INSERT INTO Orders (user_id, service_id, order_date) VALUES (${user_id}, ${service_id}, ${order_date})`;
-        sendMessageToAdmins("У вас заказали кое что")
+        sendMessageToAdmins(JSON.stringify(req.body))
         res.status(201).json({ message: 'Заказ успешно создан' });
     } catch (error) {
         console.error('Ошибка при создании заказа:', error);
@@ -328,7 +328,7 @@ const start = async () => {
         console.log('Роли уже существуют в системе');
     }
 
-    // startTelegramBot()
+    startTelegramBot()
 
     //запустить сервак
     //(прослушивать порт на запросы)
