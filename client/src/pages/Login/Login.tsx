@@ -49,7 +49,7 @@ export const Login = () => {
                 <form className="space-y-6" action="#" onSubmit={formSubmit}>
                     <div>
                         <label htmlFor="login" className="block text-sm font-medium leading-6 text-gray-900">
-                            Login
+                            Логин
                         </label>
                         <div className="mt-2">
                             <input
@@ -71,13 +71,8 @@ export const Login = () => {
                     <div>
                         <div className="flex items-center justify-between">
                             <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
-                                Password
+                                Пароль
                             </label>
-                            <div className="text-sm">
-                                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
-                                    Forgot password?
-                                </a>
-                            </div>
                         </div>
                         <div className="mt-2">
                             <input

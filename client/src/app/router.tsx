@@ -11,6 +11,7 @@ import { CategoriesAdmin } from "../pages/admin/CategoriesAdmin";
 import { Services } from "../pages/Services";
 import { ServicesAdmin } from "../pages/admin/ServicesAdmin";
 import { Service } from "../pages/Service";
+import { Landing } from "../pages/landing/Landing";
 
 
 const authRouter = createBrowserRouter([
@@ -18,6 +19,10 @@ const authRouter = createBrowserRouter([
         path: '/',
         element: <App />,
         children: [
+            {
+                path: '/',
+                element: <Landing />
+            },
             {
                 path: '/login',
                 element: <Navigate to={'/'} />
@@ -79,6 +84,10 @@ const nonAuthRouter = createBrowserRouter([
         errorElement: <Navigate to={'/'} />,
         children: [
             {
+                path: '/',
+                element: <Landing />
+            },
+            {
                 path: '/login',
                 element: <Login />,
                 errorElement: '404'
@@ -113,6 +122,10 @@ const adminRouter = createBrowserRouter([
         path: '/',
         element: <App />,
         children: [
+            {
+                path: '/',
+                element: <Landing />
+            },
             {
                 path: '/login',
                 element: <Navigate to={'/'} />
