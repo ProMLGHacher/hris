@@ -1,8 +1,8 @@
 /* Header */
 
-body {
+/* body {
     background-color: #f9f9f9;
-}
+} */
 
 header {
     background-color: #333;
@@ -26,7 +26,7 @@ nav ul li a {
 
 /* Hero Section */
 #hero {
-    background-image: url('background.jpg'); /* Подставьте своё изображение */
+    background-image: url('in.jpg'); /* Подставьте своё изображение */
     background-size: cover;
     color: #fff;
     text-align: center;
@@ -106,7 +106,7 @@ nav ul li a {
 }
 
 #hero {
-    background-image: url('https://internationalinvestment.biz/uploads/posts/2020-10/1603700200_marina-bay.jpg'); 
+    background-image: url('beautiful-optical-fiber-detail.jpg'); 
     background-size: cover;
     color: #fff;
     text-align: center;

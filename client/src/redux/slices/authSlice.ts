@@ -67,6 +67,10 @@ export const authSlice = createSlice({
             localStorage.setItem("token", payload.token)
             localStorage.setItem("login", payload.user.login)
             localStorage.setItem("role", payload.user.role)
+            localStorage.setItem("avatar", payload.user.avatar)
+            localStorage.setItem("name", payload.user.name)
+            localStorage.setItem("lastname", payload.user.lastname)
+            localStorage.setItem("email", payload.user.email)
 
             state.error = undefined
             state.loading = false
@@ -153,7 +157,7 @@ type UserData = {
 
 export const updateProfileThunk = createAsyncThunk<UserData, UserData, { rejectValue: string }>("updateProfileThunk", async (data, { rejectWithValue }) => {
     try {
-        const res = await $api.patch('/profile', data)
+        await $api.patch('/profile', data)
         return data
     } catch (error) {
         if (isAxiosError(error)) {

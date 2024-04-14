@@ -1,4 +1,4 @@
-import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
+import { PhotoIcon } from '@heroicons/react/24/solid'
 import { FormEvent, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
 import { updateProfileThunk, uploadAvatarThunk } from '../redux/slices/authSlice'

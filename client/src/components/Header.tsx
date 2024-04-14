@@ -66,7 +66,7 @@ export default function Header() {
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">
-                    {navigation.map((item, index) => (
+                    {navigation.map((item) => (
                       <NavLink
                         key={item.name}
                         to={item.href}

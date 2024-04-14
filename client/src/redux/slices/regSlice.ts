@@ -18,7 +18,7 @@ export const regSlice = createSlice({
     name: 'reg',
     initialState,
     reducers: {
-        reset: (state, action) => {
+        reset: (state) => {
             state.message = undefined
             state.error = undefined
             state.loading = false

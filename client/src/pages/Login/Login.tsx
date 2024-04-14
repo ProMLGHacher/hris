@@ -1,4 +1,4 @@
-import { EventHandler, FormEvent, useEffect, useState } from "react"
+import { FormEvent, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../redux/hooks"
 import { loginThunk } from "../../redux/slices/authSlice"
 import { Link } from "react-router-dom"
@@ -6,7 +6,6 @@ import { Link } from "react-router-dom"
 export const Login = () => {
 
     const loginState = useAppSelector(state => state.auth)
-    const loginError = useAppSelector(state => state.auth.error)
 
     const [login, setLogin] = useState("")
     const [password, setPassword] = useState("")

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Category, Service, baseURL, getCategories, getServices } from '../shared/api'
 import DropDown from '../shared/ui/DropDown'
 import { Link } from 'react-router-dom'
