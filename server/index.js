@@ -260,7 +260,24 @@ app.post('/orders', async (req, res) => {
     const order_date = Date.now()
     try {
         await sql`INSERT INTO Orders (user_id, service_id, order_date) VALUES (${user_id}, ${service_id}, ${order_date})`;
-        sendMessageToAdmins(JSON.stringify(req.body))
+
+        const a = {
+            "service_id": "1",
+            "email": "32434@kn.dde",
+            "name": "2214",
+            "lastname": "23434ubkbjkb",
+            "phone": "123123123",
+            "message": "123123123",
+            "adress": "123213123"
+        }
+
+        sendMessageToAdmins(`
+            Новый заказ от ${req.body.name}! \n
+            Его email: ${req.body.email} \n
+            Адресс: ${req.body.adress} \n
+            Телефон: ${req.body.phone} \n
+            Сообщение от ${req.body.name}: ${req.body.message} \n
+        `)
         res.status(201).json({ message: 'Заказ успешно создан' });
     } catch (error) {
         console.error('Ошибка при создании заказа:', error);
