@@ -2,7 +2,7 @@ import { createAxiosDateTransformer } from "axios-date-transformer";
 import { store } from "../redux/store";
 import { logOut } from "../redux/slices/authSlice";
 
-export const baseURL = "https://gfngb8fq-3000.euw.devtunnels.ms"
+export const baseURL = "http://localhost:3000"
 
 export const $api = createAxiosDateTransformer({
     baseURL: baseURL

@@ -12,6 +12,7 @@ import { Services } from "../pages/Services";
 import { ServicesAdmin } from "../pages/admin/ServicesAdmin";
 import { Service } from "../pages/Service";
 import { Landing } from "../pages/landing/Landing";
+import { AdminOrdersList } from "../pages/admin/AdminOrdersList";
 
 
 const authRouter = createBrowserRouter([
@@ -165,6 +166,10 @@ const adminRouter = createBrowserRouter([
                     {
                         path: '/admin/services',
                         element: <ServicesAdmin />
+                    },
+                    {
+                        path: '/admin/orders',
+                        element: <AdminOrdersList />
                     },
                 ]
             },

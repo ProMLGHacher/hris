@@ -250,15 +250,17 @@ app.get('/orders', roleMiddleware(["USER", "ADMIN"]), async (req, res) => {
 });
 
 // POST запрос для создания нового заказа
-app.post('/orders', async (req, res) => {
+app.post('/orders', roleMiddleware(["ADMIN", "USER"]), async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1]
-    const { id: user_id } = jwt.verify(token, "SECRET_KEY")
     const { service_id } = req.body;
     if (!service_id) return res.status(400).send({
         message: 'service_id is reqired'
     })
     const order_date = Date.now()
     try {
+        const { id: user_id } = jwt.verify(token, "SECRET_KEY")
+
+
         await sql`INSERT INTO Orders (user_id, service_id, order_date) VALUES (${user_id}, ${service_id}, ${order_date})`;
 
         const a = {
@@ -279,6 +281,18 @@ app.post('/orders', async (req, res) => {
             Сообщение от ${req.body.name}: ${req.body.message} \n
         `)
         res.status(201).json({ message: 'Заказ успешно создан' });
+    } catch (error) {
+        console.error('Ошибка при создании заказа:', error);
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
+});
+
+// POST запрос для создания нового заказа
+app.patch('/orders', roleMiddleware(["ADMIN"]), async (req, res) => {
+    const { order_id, status } = req.body;
+    try {
+        await sql`UPDATE Orders SET status = ${status} WHERE id = ${order_id};`
+        res.sendStatus(200);
     } catch (error) {
         console.error('Ошибка при создании заказа:', error);
         res.status(500).json({ error: 'Внутренняя ошибка сервера' });
@@ -333,6 +347,7 @@ const start = async () => {
         user_id INT,
         service_id INT,
         order_date DATE,
+        status varchar(100) DEFAULT 'pending',
         FOREIGN KEY(user_id) REFERENCES Users(id),
         FOREIGN KEY(service_id) REFERENCES Services(id)
     );`
@@ -345,7 +360,7 @@ const start = async () => {
         console.log('Роли уже существуют в системе');
     }
 
-    startTelegramBot()
+    // startTelegramBot()
 
     //запустить сервак
     //(прослушивать порт на запросы)
