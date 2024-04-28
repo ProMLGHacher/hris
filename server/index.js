@@ -238,9 +238,29 @@ app.get('/orders', roleMiddleware(["USER", "ADMIN"]), async (req, res) => {
     try {
         if (role == "USER") {
             const orders = await sql`SELECT * FROM Orders where user_id = ${userId}`;
+            for (let i = 0; i < orders.length; i++) {
+                const order = orders[i];
+                const user = (await sql`SELECT * FROM Users where id = ${order.user_id}`)[0]
+                const service = (await sql`SELECT * FROM Services where id = ${order.service_id}`)[0]
+                orders[i].user = user
+                orders[i].service = service
+
+                delete orders[i].user.password
+                delete orders[i].user.telegramchatid
+            }
             res.json(orders);
         } else {
             const orders = await sql`SELECT * FROM Orders`;
+            for (let i = 0; i < orders.length; i++) {
+                const order = orders[i];
+                const user = (await sql`SELECT * FROM Users where id = ${order.user_id}`)[0]
+                const service = (await sql`SELECT * FROM Services where id = ${order.service_id}`)[0]
+                orders[i].user = user
+                orders[i].service = service
+
+                delete orders[i].user.password
+                delete orders[i].user.telegramchatid
+            }
             res.json(orders);
         }
     } catch (error) {
@@ -252,27 +272,14 @@ app.get('/orders', roleMiddleware(["USER", "ADMIN"]), async (req, res) => {
 // POST запрос для создания нового заказа
 app.post('/orders', roleMiddleware(["ADMIN", "USER"]), async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1]
-    const { service_id } = req.body;
+    const { service_id, adress, email, lastname, message, name, phone } = req.body;
     if (!service_id) return res.status(400).send({
         message: 'service_id is reqired'
     })
     const order_date = Date.now()
     try {
         const { id: user_id } = jwt.verify(token, "SECRET_KEY")
-
-
-        await sql`INSERT INTO Orders (user_id, service_id, order_date) VALUES (${user_id}, ${service_id}, ${order_date})`;
-
-        const a = {
-            "service_id": "1",
-            "email": "32434@kn.dde",
-            "name": "2214",
-            "lastname": "23434ubkbjkb",
-            "phone": "123123123",
-            "message": "123123123",
-            "adress": "123213123"
-        }
-
+        await sql`INSERT INTO Orders (user_id, service_id, order_date, adress, email, lastname, message, name, phone) VALUES (${user_id}, ${service_id}, ${order_date}, ${adress}, ${email}, ${lastname}, ${message}, ${name}, ${phone})`;
         sendMessageToAdmins(`
             Новый заказ от ${req.body.name}! \n
             Его email: ${req.body.email} \n
@@ -287,7 +294,7 @@ app.post('/orders', roleMiddleware(["ADMIN", "USER"]), async (req, res) => {
     }
 });
 
-// POST запрос для создания нового заказа
+// POST запрос для изменения статуса заказа
 app.patch('/orders', roleMiddleware(["ADMIN"]), async (req, res) => {
     const { order_id, status } = req.body;
     try {
@@ -342,12 +349,19 @@ const start = async () => {
         FOREIGN KEY (category_id) REFERENCES Categories(id)
         );`
 
+
     await sql`CREATE TABLE IF NOT EXISTS Orders(
         id SERIAL PRIMARY KEY,
         user_id INT,
         service_id INT,
         order_date DATE,
         status varchar(100) DEFAULT 'pending',
+        adress varchar(100),
+        email varchar(100),
+        lastname varchar(100),
+        message varchar(100),
+        name varchar(100),
+        phone varchar(100),
         FOREIGN KEY(user_id) REFERENCES Users(id),
         FOREIGN KEY(service_id) REFERENCES Services(id)
     );`
