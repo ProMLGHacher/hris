@@ -306,6 +306,24 @@ app.patch('/orders', roleMiddleware(["ADMIN"]), async (req, res) => {
     }
 });
 
+app.post('/bid', async (req, res) => {
+    const { name, email, message } = req.body
+    if (!name) return res.status(400).send({
+        message: 'name is reqired'
+    })
+    if (!email) return res.status(400).send({
+        message: 'email is reqired'
+    })
+    if (!message) return res.status(400).send({
+        message: 'message is reqired'
+    })
+
+    sendMessageToAdmins(`
+        Новый запрос от ${name}! \nЕго email: ${email} \nСообщение от ${name}: ${message}`)
+
+    res.send(200)
+})
+
 
 //функция старта приложения
 const start = async () => {
@@ -374,7 +392,7 @@ const start = async () => {
         console.log('Роли уже существуют в системе');
     }
 
-    // startTelegramBot()
+    startTelegramBot()
 
     //запустить сервак
     //(прослушивать порт на запросы)

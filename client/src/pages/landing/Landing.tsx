@@ -1,7 +1,31 @@
 import { Link } from 'react-router-dom'
 import './Landing.css'
+import { useState } from 'react'
+import { useAppSelector } from '../../redux/hooks'
+import { $api } from '../../shared/api'
 
 export const Landing = () => {
+
+    const user = useAppSelector(state => state.auth)
+
+    const [name, setName] = useState(user.name)
+    const [email, setEmail] = useState(user.email)
+    const [message, setMessage] = useState('')
+
+    const submitForm = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        $api.post('/bid', {
+            name,
+            email,
+            message
+        })
+        .then(res => {
+            if (res.status === 200) {
+                alert('Заявка отправлена')
+            }
+        })
+    }
+
     return (
         <>
 
@@ -116,10 +140,10 @@ export const Landing = () => {
                 <div id='contact' className="container">
                     <h2>Наши цены</h2>
                     <p>Цены на наши услуги зависят от объема работ и специфики проекта. Для получения более точной информации, свяжитесь с нами.</p>
-                    <form action="#" method="post">
-                        <input type="text" name="name" placeholder="Ваше имя" required />
-                        <input type="email" name="email" placeholder="Ваш Email" required />
-                        <textarea name="message" placeholder="Ваше сообщение" required></textarea>
+                    <form onSubmit={submitForm}>
+                        <input value={name} onChange={e => setName(e.target.value)} type="text" name="name" placeholder="Ваше имя" required />
+                        <input value={email} onChange={e => setEmail(e.target.value)} type="email" name="email" placeholder="Ваш Email" required />
+                        <textarea value={message} onChange={e => setMessage(e.target.value)} name="message" placeholder="Ваше сообщение" required></textarea>
                         <button type="submit">Отправить</button>
                     </form>
                 </div>

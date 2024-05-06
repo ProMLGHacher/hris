@@ -12,6 +12,8 @@ export const Services = () => {
 
     useEffect(() => {
         getCategories().then(e => {
+            console.log(e);
+            
             setCategories(e)
             setSelectedCategory(e[0].id)
         })

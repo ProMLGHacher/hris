@@ -106,7 +106,7 @@ nav ul li a {
 }
 
 #hero {
-    background-image: url('beautiful-optical-fiber-detail.jpg'); 
+    background-image: url('/beautiful-optical-fiber-detail.jpg'); 
     background-size: cover;
     color: #fff;
     text-align: center;

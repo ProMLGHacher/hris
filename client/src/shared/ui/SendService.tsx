@@ -31,6 +31,10 @@ export default function SendService({ service_id } : {
       message: message,
       adress: adress
     })
+    setAgreed(false)
+    setAdress("")
+    setMessage("")
+    setPhone("")
   }
 
   return (

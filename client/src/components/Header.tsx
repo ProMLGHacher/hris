@@ -39,6 +39,7 @@ export default function Header() {
         { name: 'Главная', href: '/' },
         { name: 'Новости', href: '/news' },
         { name: 'Услуги', href: '/services' },
+        
       ])
     }
   }, [role])
