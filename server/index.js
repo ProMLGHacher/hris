@@ -73,11 +73,13 @@ const start = async () => {
     )`
     await sql`CREATE TABLE IF NOT EXISTS News (
         id SERIAL PRIMARY KEY,
+        user_id INT,
         title VARCHAR(100) NOT NULL,
         description TEXT NOT NULL,
         date DATE NOT NULL,
         href varchar(200) NOT NULL,
-        category varchar(50) NOT NULL
+        category varchar(50) NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES Users(id)
     );`
 
     await sql`CREATE TABLE IF NOT EXISTS Categories (
