@@ -1,4 +1,4 @@
-import express from "express";
+import express, { response } from "express";
 import { sql } from "./db.js";
 import { register } from "./controllers/register.js";
 import { auth } from "./controllers/auth.js";
@@ -22,6 +22,7 @@ import { getOrdersList } from "./controllers/orders/getOrdersList.js";
 import { createOrder } from "./controllers/orders/createOrder.js";
 import { changeOrderStatus } from "./controllers/orders/changeOrderStatus.js";
 import { createBid } from "./controllers/createBid.js";
+import swaggerUi from 'swagger-ui-express';
 
 //порт на котором будет работать сервер
 const PORT = 3000
@@ -32,6 +33,584 @@ const app = express()
 //чтобы сервер понимал json
 app.use(express.json())
 app.use(cors())
+
+const swaggerDocument = {
+    openapi: '3.0.0',
+    info: {
+        title: 'Express API for Dangle',
+        version: '1.0.0',
+        description: 'The REST API for Dangle Panel service'
+    },
+    servers: [
+        {
+            url: 'http://localhost:3000',
+            description: 'Development server'
+        }
+    ],
+    paths: {
+        '/reg': {
+            post: {
+                summary: 'Регистрация нового пользователя',
+                description: 'Регистрация нового пользователя',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    username: { type: 'string' },
+                                    password: { type: 'string' },
+                                    isAdmin: { type: 'boolean' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '409': {
+                        description: 'Пользователь уже сущетсвует'
+                    },
+                    '200': {
+                        description: 'Пользователь успешно зарегистрирован'
+                    },
+                }
+            }
+        },
+        '/auth': {
+            post: {
+                summary: 'Авторизация пользователя',
+                description: 'Авторизация пользователя',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    username: { type: 'string' },
+                                    password: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '400': {
+                        description: 'Неверные данные'
+                    },
+                    '401': {
+                        description: 'Пользователь не авторизован'
+                    },
+                    '200': {
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        token: { type: 'string' },
+                                        user: {
+                                            type: 'object',
+                                            properties: {
+                                                id: { type: 'integer', allowNull: false },
+                                                login: { type: 'string', maxLength: 100, allowNull: false },
+                                                name: { type: 'string', maxLength: 100 },
+                                                lastname: { type: 'string', maxLength: 100 },
+                                                email: { type: 'string', maxLength: 100 },
+                                                role: { type: 'string', maxLength: 100, references: { model: 'Roles', key: 'role' } },
+                                                avatar: { type: 'string', maxLength: 250 },
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/profile': {
+            put: {
+                summary: 'Обновление аватарки пользователя',
+                description: 'Обновление аватарки пользователя',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'multipart/form-data': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    avatar: { type: 'string', format: 'binary' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Аватарка пользователя успешно обновлена'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            },
+            patch: {
+                summary: 'Обновление профиля пользователя',
+                description: 'Обновление профиля пользователя',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    name: { type: 'string', maxLength: 100 },
+                                    lastname: { type: 'string', maxLength: 100 },
+                                    email: { type: 'string', maxLength: 100 },
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Профиль пользователя успешно обновлен'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            },
+            get: {
+                summary: 'Получение профиля пользователя',
+                description: 'Получение профиля пользователя',
+                security: [{ bearer: [] }],
+                responses: {
+                    '200': {
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'integer', allowNull: false },
+                                        login: { type: 'string', maxLength: 100, allowNull: false },
+                                        name: { type: 'string', maxLength: 100 },
+                                        lastname: { type: 'string', maxLength: 100 },
+                                        email: { type: 'string', maxLength: 100 },
+                                        role: { type: 'string', maxLength: 100, references: { model: 'Roles', key: 'role' } },
+                                        avatar: { type: 'string', maxLength: 250 },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/avatars/:filename': {
+            get: {
+                summary: 'Получение аватарки пользователя',
+                description: 'Получение аватарки пользователя',
+                security: [{ bearer: [] }],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'filename',
+                        required: true,
+                        schema: {
+                            type: 'string'
+                        }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Аватар успешно получен',
+                        content: {
+                            'image/png': {
+                                schema: {
+                                    type: 'string',
+                                    format: 'binary'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/news': {
+            get: {
+                summary: 'Получение новостей',
+                description: 'Получение новостей',
+                security: [{ bearer: [] }],
+                responses: {
+                    '200': {
+                        description: 'Новости успешно получены',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'integer', allowNull: false },
+                                            user_id: { type: 'integer', allowNull: false },
+                                            title: { type: 'string', maxLength: 100, allowNull: false },
+                                            description: { type: 'string', allowNull: false },
+                                            date: { type: 'string', format: 'date', allowNull: false },
+                                            href: { type: 'string', maxLength: 200, allowNull: false },
+                                            category: { type: 'string', maxLength: 50, allowNull: false },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            post: {
+                summary: 'Создание новой новости',
+                description: 'Создание новой новости',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string', maxLength: 100, allowNull: false },
+                                    description: { type: 'string', allowNull: false },
+                                    href: { type: 'string', maxLength: 200, allowNull: false },
+                                    category: { type: 'string', maxLength: 50, allowNull: false },
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Новость успешно создана'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            }
+        },
+        '/categories': {
+            get: {
+                summary: 'Получение категорий',
+                description: 'Получение категорий',
+                security: [{ bearer: [] }],
+                responses: {
+                    '200': {
+                        description: 'Категории успешно получены',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'integer', allowNull: false },
+                                            name: { type: 'string', maxLength: 100, allowNull: false },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            post: {
+                summary: 'Создание новой категории',
+                description: 'Создание новой категории',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    name: { type: 'string', maxLength: 100, allowNull: false },
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Категория успешно создана'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            }
+        },
+        '/services': {
+            get: {
+                summary: 'Получение услуг',
+                description: 'Получение услуг',
+                security: [{ bearer: [] }],
+                parameters: [
+                    {
+                        in: 'query',
+                        name: 'category_id', 
+                        schema: {
+                            type: 'integer'
+                        },
+                        required: true,
+                        description: 'Id для фильтрации сервисов по категории'
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Сервисы успешно получены',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'integer', allowNull: false },
+                                            title: { type: 'string', maxLength: 100, allowNull: false },
+                                            description: { type: 'string', allowNull: false },
+                                            category_id: { type: 'integer', allowNull: false },
+                                            price: { type: 'integer', allowNull: false },
+                                            image: { type: 'string', maxLength: 100, allowNull: false },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            post: {
+                summary: 'Создание новой услуги',
+                description: 'Создание новой услуги',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string', maxLength: 100, allowNull: false },
+                                    description: { type: 'string', allowNull: false },
+                                    category_id: { type: 'integer', allowNull: false },
+                                    price: { type: 'integer', allowNull: false },
+                                    avatar: {
+                                        type: 'string',
+                                        format: 'binary'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Услуга успешно создана'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            }
+        },
+        '/services/:id': {
+            get: {
+                summary: 'Получение услуги по id',
+                description: 'Получение услуги по id',
+                security: [{ bearer: [] }],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {
+                            type: 'integer'
+                        }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Услуга успешно получена',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'integer', allowNull: false },
+                                        title: { type: 'string', maxLength: 100, allowNull: false },
+                                        description: { type: 'string', allowNull: false },
+                                        category_id: { type: 'integer', allowNull: false },
+                                        price: { type: 'integer', allowNull: false },
+                                        image: { type: 'string', maxLength: 100, allowNull: false },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/orders': {
+            get: {
+                summary: 'Получение заказов',
+                description: 'Получение заказов',
+                security: [{ bearer: [] }],
+                responses: {
+                    '200': {
+                        description: 'Заказы успешно получены',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'integer', allowNull: false },
+                                            user: { 
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'integer', allowNull: false },
+                                                    login: { type: 'string', maxLength: 100, allowNull: false },
+                                                    name: { type: 'string', maxLength: 100, allowNull: false },
+                                                    lastname: { type: 'string', maxLength: 100, allowNull: false },
+                                                    email: { type: 'string', maxLength: 100, allowNull: false },
+                                                    role: { type: 'string', maxLength: 100, allowNull: false },
+                                                    avatar: { type: 'string', maxLength: 100, allowNull: false },
+                                                }
+                                             },
+                                            service: { 
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'integer', allowNull: false },
+                                                    title: { type: 'string', maxLength: 100, allowNull: false },
+                                                    category_id: { type: 'integer', allowNull: false },
+                                                    price: { type: 'integer', allowNull: false },
+                                                    image: { type: 'string', maxLength: 100, allowNull: false },
+                                                }
+                                            },
+                                            order_date: { type: 'string', format: 'date', allowNull: false },
+                                            status: { type: 'string', maxLength: 100, allowNull: false },
+                                            adress: { type: 'string', maxLength: 100, allowNull: false },
+                                            email: { type: 'string', maxLength: 100, allowNull: false },
+                                            lastname: { type: 'string', maxLength: 100, allowNull: false },
+                                            message: { type: 'string', maxLength: 100, allowNull: false },
+                                            name: { type: 'string', maxLength: 100, allowNull: false },
+                                            phone: { type: 'string', maxLength: 100, allowNull: false },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            post: {
+                summary: 'Создание нового заказа',
+                description: 'Создание нового заказа',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    service_id: { type: 'integer', allowNull: false },
+                                    adress: { type: 'string', maxLength: 100, allowNull: false },
+                                    email: { type: 'string', maxLength: 100, allowNull: false },
+                                    lastname: { type: 'string', maxLength: 100, allowNull: false },
+                                    message: { type: 'string', maxLength: 100, allowNull: false },
+                                    name: { type: 'string', maxLength: 100, allowNull: false },
+                                    phone: { type: 'string', maxLength: 100, allowNull: false },
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Заказ успешно создан'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            },
+            patch: {
+                summary: 'Изменение статуса заказа',
+                description: 'Изменение статуса заказа',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'integer', allowNull: false },
+                                    status: { type: 'string', maxLength: 100, allowNull: false },
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Заказ успешно изменен'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            }
+        },
+        '/bid': {
+            post: {
+                summary: 'Создание новой заявки',
+                description: 'Создание новой заявки',
+                security: [{ bearer: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    email: { type: 'string', maxLength: 100, allowNull: false },
+                                    name: { type: 'string', maxLength: 100, allowNull: false },
+                                    message: { type: 'string', maxLength: 100, allowNull: false },
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Заявка успешно создана'
+                    },
+                    '400': {
+                        description: 'Неверные данные'
+                    }
+                }
+            }
+        },
+    },
+}
+
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.post('/reg', register)
 app.post('/auth', auth)
